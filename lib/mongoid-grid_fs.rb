@@ -196,8 +196,10 @@
                 chunk.n = n
                 n += 1
                 chunk.save!
+puts "chunk ##{n} saved, length #{length}, id #{chunk.id}"
                 chunks.push(chunk)
               end
+puts "total of #{chunks.length} chunks"
 
             end
 
@@ -208,8 +210,11 @@
             file.update_attributes(attributes)
 
             file.save!
+puts "file saved, chunks length: #{file.chunks.size}, #{file.id}"
             file
-          rescue
+          rescue Exception => e
+puts "something wrong, destroying chunks on roll-back"
+puts e, $@
             chunks.each{|chunk| chunk.destroy rescue nil}
             raise
           end
@@ -343,6 +348,7 @@
 
           def each(&block)
             fetched, limit = 0, 7
+puts "each: #{chunks.size}"
 
             while fetched < chunks.size
               chunks.where(:n.lt => fetched+limit, :n.gte => fetched).
@@ -377,6 +383,7 @@
               data << chunk
             end
 
+puts "slice: #{offset}, #{length}"
             data[offset, length]
           end
 
